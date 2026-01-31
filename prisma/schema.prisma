@@ -1,8 +1,118 @@
+// ========================
+// Prisma Client Generator
+// ========================
 generator client {
   provider = "prisma-client"
   output   = "../generated/prisma"
 }
 
+// ========================
+// Datasource
+// ========================
 datasource db {
   provider = "postgresql"
+}
+
+// ========================
+// Enums
+// ========================
+enum ROLE {
+  CUSTOMER
+  SELLER
+  ADMIN
+}
+
+enum ORDER_STATUS {
+  PLACED
+  PROCESSING
+  SHIPPED
+  DELIVERED
+  CANCELLED
+}
+
+// ========================
+// Models
+// ========================
+
+model User {
+  id        Int      @id @default(autoincrement())
+  name      String
+  email     String   @unique
+  password  String
+  role      ROLE     @default(CUSTOMER)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  medicines Medicine[] @relation("SellerMedicines")
+  orders    Order[]    @relation("CustomerOrders")
+  reviews   Review[]
+}
+
+model Category {
+  id        Int      @id @default(autoincrement())
+  name      String   @unique
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  medicines Medicine[]
+}
+
+model Medicine {
+  id          Int      @id @default(autoincrement())
+  name        String
+  description String?
+  price       Float
+  stock       Int
+  image       String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations
+  sellerId   Int
+  seller     User        @relation("SellerMedicines", fields: [sellerId], references: [id])
+  categoryId Int
+  category   Category    @relation(fields: [categoryId], references: [id])
+  reviews    Review[]
+  orderItems OrderItem[]
+}
+
+model Order {
+  id              Int          @id @default(autoincrement())
+  totalAmount     Float
+  status          ORDER_STATUS @default(PLACED)
+  shippingAddress String
+  createdAt       DateTime     @default(now())
+  updatedAt       DateTime     @updatedAt
+
+  // Relations
+  customerId Int
+  customer   User        @relation("CustomerOrders", fields: [customerId], references: [id])
+  items      OrderItem[]
+}
+
+model OrderItem {
+  id       Int   @id @default(autoincrement())
+  quantity Int
+  price    Float
+
+  // Relations
+  orderId    Int
+  order      Order    @relation(fields: [orderId], references: [id])
+  medicineId Int
+  medicine   Medicine @relation(fields: [medicineId], references: [id])
+}
+
+model Review {
+  id        Int      @id @default(autoincrement())
+  rating    Int // 1-5
+  comment   String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  customerId Int
+  customer   User     @relation(fields: [customerId], references: [id])
+  medicineId Int
+  medicine   Medicine @relation(fields: [medicineId], references: [id])
 }
