@@ -19,3 +19,9 @@ async function main() {
 }
 
 main();
+
+// await prisma.category.create({
+//   data: {
+//     name: 'Pain Relief',
+//   },
+// });
