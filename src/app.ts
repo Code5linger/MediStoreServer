@@ -1,12 +1,23 @@
 import express, { type Application } from 'express';
 import { PostRouter } from './modules/shop/shop.router';
 import { MedicineRouter } from './modules/medicine/medicine.router';
+import { toNodeHandler } from 'better-auth/node';
+import { auth } from './lib/auth';
+import cors from 'cors';
 
 const app: Application = express();
 
 app.use(express.json());
 
-// Create Posts
+app.all('/api/auth/*splat', toNodeHandler(auth));
+
+app.use(
+  cors!({
+    origin: process.env.APP_URL || 'http://localhost:3000',
+    credentials: true,
+  }),
+);
+
 app.use('/shop', PostRouter);
 
 app.use('/medicine', MedicineRouter);
