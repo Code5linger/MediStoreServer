@@ -3,9 +3,13 @@ import { prisma } from '../../lib/prisma';
 
 const createMedicine = async (
   data: Omit<Medicine, 'id' | 'createdAt' | 'updatedAt'>,
+  userId: string,
 ) => {
   const result = await prisma.medicine.create({
-    data,
+    data: {
+      ...data,
+      sellerId: userId,
+    },
   });
   return result;
 };
