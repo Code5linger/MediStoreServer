@@ -14,26 +14,29 @@ const createMedicine = async (
   return result;
 };
 
-const getAllMedicine = async (payload: { search?: string | undefined }) => {
-  const allPost = await prisma.medicine.findMany({
-    where: {
-      OR: [
-        {
-          name: {
-            contains: payload.search as string,
-            mode: 'insensitive',
+const getAllMedicine = async (payload: { search?: string }) => {
+  const allMedicine = await prisma.medicine.findMany({
+    ...(payload.search && {
+      where: {
+        OR: [
+          {
+            name: {
+              contains: payload.search,
+              mode: 'insensitive',
+            },
           },
-        },
-        {
-          description: {
-            contains: payload.search as string,
-            mode: 'insensitive',
+          {
+            description: {
+              contains: payload.search,
+              mode: 'insensitive',
+            },
           },
-        },
-      ],
-    },
+        ],
+      },
+    }),
   });
-  return allPost;
+
+  return allMedicine;
 };
 
 export const MedicineService = {

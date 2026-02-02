@@ -38,7 +38,7 @@ model User {
   orders  Order[]  @relation("CustomerOrders")
   reviews Review[]
 
-  role   String? @default("USER")
+  role   String  @default("CUSTOMER")
   phone  String?
   status String? @default("ACTIVE")
 
@@ -99,11 +99,12 @@ model Verification {
 // Enums
 // ========================
 
-enum ROLE {
-  CUSTOMER
-  SELLER
-  ADMIN
-}
+// 🤖
+// enum ROLE {
+//   CUSTOMER
+//   SELLER
+//   ADMIN
+// }
 
 enum ORDER_STATUS {
   PLACED

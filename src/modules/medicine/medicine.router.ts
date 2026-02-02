@@ -4,7 +4,11 @@ import auth, { UserRole } from '../../middleware/auth';
 
 const router = Router();
 
-router.post('/', auth(UserRole.USER), MedicineController.createMedicine);
+router.post(
+  '/',
+  auth(UserRole.ADMIN, UserRole.SELLER),
+  MedicineController.createMedicine,
+);
 
 router.get('/', MedicineController.getAllMedicine);
 

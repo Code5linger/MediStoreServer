@@ -1,5 +1,4 @@
 import express, { type Application } from 'express';
-import { PostRouter } from './modules/shop/shop.router';
 import { MedicineRouter } from './modules/medicine/medicine.router';
 import { toNodeHandler } from 'better-auth/node';
 import { auth } from './lib/auth';
@@ -17,8 +16,6 @@ app.use(
     credentials: true,
   }),
 );
-
-app.use('/shop', PostRouter);
 
 app.use('/medicine', MedicineRouter);
 

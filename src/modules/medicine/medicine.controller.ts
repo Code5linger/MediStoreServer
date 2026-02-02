@@ -25,13 +25,14 @@ const createMedicine = async (req: Request, res: Response) => {
 const getAllMedicine = async (req: Request, res: Response) => {
   try {
     const { search } = req.query;
-    const searchType = typeof search === 'string' ? search : undefined;
-    const result = await MedicineService.getAllMedicine({ search: searchType });
+
+    const result = await MedicineService.getAllMedicine(
+      typeof search === 'string' ? { search } : {},
+    );
+
     res.status(200).json(result);
   } catch (error) {
-    res.status(400).json({
-      error,
-    });
+    res.status(400).json({ error });
   }
 };
 

@@ -1,13 +1,9 @@
-import {
-  Router,
-  type NextFunction,
-  type Request,
-  type Response,
-} from 'express';
+import { type NextFunction, type Request, type Response } from 'express';
 import { auth as betterAuth } from '../lib/auth';
 
 export enum UserRole {
-  USER = 'USER',
+  CUSTOMER = 'CUSTOMER',
+  SELLER = 'SELLER',
   ADMIN = 'ADMIN',
 }
 
@@ -18,7 +14,8 @@ declare global {
         id: string;
         email: string;
         name: string;
-        role: string;
+        // role: string;
+        role: UserRole;
         emailVerified: boolean;
       };
     }
@@ -52,14 +49,15 @@ const auth = (...roles: UserRole[]) => {
         id: session.user.id,
         email: session.user.email,
         name: session.user.name,
-        role: session.user.role as string,
+        // role: session.user.role as string,
+        role: session.user.role as UserRole,
         emailVerified: session.user.emailVerified,
       };
 
       if (roles.length && !roles.includes(req.user.role as UserRole)) {
-        return res.status(401).json({
+        return res.status(403).json({
           success: false,
-          message: 'Forbidden! Bad ',
+          message: 'Forbidden!',
         });
       }
       next();
