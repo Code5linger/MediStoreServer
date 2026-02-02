@@ -6,6 +6,7 @@ import cors from 'cors';
 import { CategoryRouter } from './modules/category/category.router';
 import { OrderRouter } from './modules/order/order.router';
 import { ReviewRouter } from './modules/review/review.router';
+import { AdminRouter } from './modules/admin/admin.router';
 
 const app: Application = express();
 
@@ -27,6 +28,8 @@ app.use('/categories', CategoryRouter);
 app.use('/orders', OrderRouter);
 
 app.use('/reviews', ReviewRouter);
+
+app.use('/admin', AdminRouter);
 
 app.get('/', (req, res) => {
   console.log('Hello World!');
