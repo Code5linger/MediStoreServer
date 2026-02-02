@@ -1,17 +1,32 @@
-import type { Medicine } from '../../../generated/prisma/client';
 import { prisma } from '../../lib/prisma';
 
 const createMedicine = async (
-  data: Omit<Medicine, 'id' | 'createdAt' | 'updatedAt'>,
+  data: {
+    name: string;
+    description?: string;
+    price: number;
+    stock: number;
+    image?: string;
+    categoryId: number;
+  },
   userId: string,
 ) => {
-  const result = await prisma.medicine.create({
+  const category = await prisma.category.findUnique({
+    where: { id: data.categoryId },
+  });
+
+  if (!category) {
+    throw new Error('Category not found');
+  }
+
+  const medicine = await prisma.medicine.create({
     data: {
       ...data,
       sellerId: userId,
     },
   });
-  return result;
+
+  return medicine;
 };
 
 const getAllMedicine = async (payload: { search?: string }) => {
