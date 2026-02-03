@@ -40,7 +40,8 @@ export const auth = betterAuth({
   },
   emailAndPassword: {
     enabled: true,
-    autoSignIn: false,
+    // autoSignIn: false,
+    autoSignIn: true,
     // requireEmailVerification: true,
     requireEmailVerification: false,
   },
@@ -101,6 +102,20 @@ export const auth = betterAuth({
       prompt: 'select_account consent',
       clientId: process.env.GOOGLE_CLIENT_ID as string,
       clientSecret: process.env.GOOGLE_CLIENT_SECRET as string,
+    },
+  },
+  // 🤖
+  session: {
+    cookieCache: {
+      enabled: true,
+      maxAge: 5 * 60, // 5 minutes
+    },
+  },
+  advanced: {
+    cookiePrefix: 'medistore',
+    // useSecureCookies: process.env.NODE_ENV === 'production',
+    crossSubDomainCookies: {
+      enabled: false,
     },
   },
 });

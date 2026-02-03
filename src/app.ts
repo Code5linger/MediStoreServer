@@ -12,23 +12,31 @@ const app: Application = express();
 
 app.use(express.json());
 
+// app.use(
+//   cors!({
+//     origin: process.env.APP_URL || 'http://localhost:3000',
+//     credentials: true,
+//   }),
+// );
+
 app.use(
-  cors!({
+  cors({
     origin: process.env.APP_URL || 'http://localhost:3000',
-    credentials: true,
+    credentials: true, // CRITICAL
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization', 'Cookie'],
+    exposedHeaders: ['Set-Cookie'],
   }),
 );
 
+// Better Auth routes
 app.all('/api/auth/*splat', toNodeHandler(auth));
 
+// API routes
 app.use('/medicine', MedicineRouter);
-
 app.use('/categories', CategoryRouter);
-
 app.use('/orders', OrderRouter);
-
 app.use('/reviews', ReviewRouter);
-
 app.use('/admin', AdminRouter);
 
 app.get('/', (req, res) => {
