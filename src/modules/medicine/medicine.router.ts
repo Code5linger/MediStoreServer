@@ -8,4 +8,6 @@ router.post('/', auth(UserRole.SELLER), MedicineController.createMedicine);
 
 router.get('/', MedicineController.getAllMedicine);
 
+router.get('/sellers', MedicineController.getAllSellers);
+
 export const MedicineRouter = router;

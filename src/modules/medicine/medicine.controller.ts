@@ -22,14 +22,43 @@ const createMedicine = async (req: Request, res: Response) => {
   }
 };
 
+// const getAllMedicine = async (req: Request, res: Response) => {
+//   try {
+//     const { search } = req.query;
+
+//     const result = await MedicineService.getAllMedicine(
+//       typeof search === 'string' ? { search } : {},
+//     );
+
+//     res.status(200).json(result);
+//   } catch (error) {
+//     res.status(400).json({ error });
+//   }
+// };
+
 const getAllMedicine = async (req: Request, res: Response) => {
   try {
-    const { search } = req.query;
+    const { search, categoryId, minPrice, maxPrice, sellerId, sortBy } =
+      req.query;
 
-    const result = await MedicineService.getAllMedicine(
-      typeof search === 'string' ? { search } : {},
-    );
+    const result = await MedicineService.getAllMedicine({
+      search: typeof search === 'string' ? search : undefined,
+      categoryId: categoryId ? Number(categoryId) : undefined,
+      minPrice: minPrice ? Number(minPrice) : undefined,
+      maxPrice: maxPrice ? Number(maxPrice) : undefined,
+      sellerId: typeof sellerId === 'string' ? sellerId : undefined,
+      sortBy: sortBy as any,
+    });
 
+    res.status(200).json(result);
+  } catch (error) {
+    res.status(400).json({ error });
+  }
+};
+
+const getAllSellers = async (req: Request, res: Response) => {
+  try {
+    const result = await MedicineService.getAllSellers();
     res.status(200).json(result);
   } catch (error) {
     res.status(400).json({ error });
@@ -39,4 +68,5 @@ const getAllMedicine = async (req: Request, res: Response) => {
 export const MedicineController = {
   createMedicine,
   getAllMedicine,
+  getAllSellers,
 };
