@@ -9,7 +9,7 @@ router.post('/', auth(UserRole.SELLER), MedicineController.createMedicine);
 router.get('/', MedicineController.getAllMedicine);
 
 router.get('/sellers', MedicineController.getAllSellers);
-
+router.get('/:id', MedicineController.getMedicineById);
 router.put('/:id', auth(UserRole.SELLER), MedicineController.updateMedicine);
 router.delete('/:id', auth(UserRole.SELLER), MedicineController.deleteMedicine);
 

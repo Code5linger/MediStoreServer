@@ -238,10 +238,166 @@ const deleteMedicine = async (id: number, userId: string) => {
   await prisma.medicine.delete({ where: { id } });
 };
 
+const VALID_STATUSES = [
+  'PLACED',
+  'PROCESSING',
+  'SHIPPED',
+  'DELIVERED',
+  'CANCELLED',
+];
+
+const ALLOWED_TRANSITIONS: Record<string, string[]> = {
+  PLACED: ['PROCESSING', 'CANCELLED'],
+  PROCESSING: ['SHIPPED', 'CANCELLED'],
+  SHIPPED: ['DELIVERED'],
+  DELIVERED: [],
+  CANCELLED: [],
+};
+
+const getSellerOrders = async (sellerId: string, statusFilter?: string) => {
+  // Validate status filter if provided
+  if (statusFilter && !VALID_STATUSES.includes(statusFilter)) {
+    const err: any = new Error('Invalid status filter');
+    err.status = 400;
+    throw err;
+  }
+
+  const orders = await prisma.order.findMany({
+    where: {
+      // order must have at least one item whose medicine belongs to this seller
+      items: {
+        some: {
+          medicine: {
+            sellerId: sellerId,
+          },
+        },
+      },
+      // optionally filter by status
+      ...(statusFilter && { status: statusFilter as any }),
+    },
+    orderBy: { createdAt: 'desc' },
+    include: {
+      customer: {
+        select: { id: true, name: true, email: true },
+      },
+      items: {
+        // only include items that belong to THIS seller's medicines
+        where: {
+          medicine: {
+            sellerId: sellerId,
+          },
+        },
+        include: {
+          medicine: {
+            select: { id: true, name: true, price: true, image: true },
+          },
+        },
+      },
+    },
+  });
+
+  return orders;
+};
+
+const updateSellerOrderStatus = async (
+  orderId: number,
+  newStatus: string,
+  sellerId: string,
+) => {
+  if (!VALID_STATUSES.includes(newStatus)) {
+    const err: any = new Error('Invalid status');
+    err.status = 400;
+    throw err;
+  }
+
+  // Fetch the order and verify seller owns at least one item in it
+  const order = await prisma.order.findUnique({
+    where: { id: orderId },
+    include: {
+      items: {
+        include: { medicine: { select: { sellerId: true } } },
+      },
+    },
+  });
+
+  if (!order) {
+    const err: any = new Error('Order not found');
+    err.status = 404;
+    throw err;
+  }
+
+  const sellerOwnsItem = order.items.some(
+    (item) => item.medicine.sellerId === sellerId,
+  );
+
+  if (!sellerOwnsItem) {
+    const err: any = new Error(
+      'You can only update orders containing your medicines',
+    );
+    err.status = 403;
+    throw err;
+  }
+
+  // Validate the transition is legal
+  const allowed = ALLOWED_TRANSITIONS[order.status];
+  if (!allowed || !allowed.includes(newStatus)) {
+    const err: any = new Error(
+      `Cannot transition from ${order.status} to ${newStatus}`,
+    );
+    err.status = 400;
+    throw err;
+  }
+
+  const updated = await prisma.order.update({
+    where: { id: orderId },
+    data: { status: newStatus as any },
+    include: {
+      customer: {
+        select: { id: true, name: true, email: true },
+      },
+      items: {
+        include: {
+          medicine: {
+            select: { id: true, name: true, price: true, image: true },
+          },
+        },
+      },
+    },
+  });
+
+  return updated;
+};
+
+const getMedicineById = async (id: number) => {
+  const medicine = await prisma.medicine.findUnique({
+    where: { id },
+    include: {
+      category: {
+        select: {
+          id: true,
+          name: true,
+        },
+      },
+      seller: {
+        select: {
+          id: true,
+          name: true,
+          email: true,
+        },
+      },
+    },
+  });
+
+  return medicine;
+};
+
 export const MedicineService = {
   createMedicine,
   getAllMedicine,
   getAllSellers,
   updateMedicine,
   deleteMedicine,
+  getSellerOrders,
+  updateSellerOrderStatus,
+  getMedicineById,
 };

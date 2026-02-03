@@ -181,10 +181,60 @@ const updateOrderStatus = async (req: Request, res: Response) => {
   }
 };
 
+const getSellerOrders = async (req: Request, res: Response) => {
+  try {
+    const user = req.user;
+    if (!user) {
+      return res.status(401).json({ error: 'Unauthorized' });
+    }
+
+    const { status } = req.query;
+
+    const orders = await OrderService.getSellerOrders(
+      user.id,
+      typeof status === 'string' ? status : undefined,
+    );
+
+    res.status(200).json(orders);
+  } catch (error: any) {
+    res.status(error.status || 400).json({ error: error.message || error });
+  }
+};
+
+const updateSellerOrderStatus = async (req: Request, res: Response) => {
+  try {
+    const user = req.user;
+    if (!user) {
+      return res.status(401).json({ error: 'Unauthorized' });
+    }
+
+    const id = Number(req.params.id);
+    if (isNaN(id)) {
+      return res.status(400).json({ error: 'Invalid order ID' });
+    }
+
+    const { status } = req.body;
+    if (!status) {
+      return res.status(400).json({ error: 'Status is required' });
+    }
+
+    const updated = await OrderService.updateSellerOrderStatus(
+      id,
+      status,
+      user.id,
+    );
+    res.status(200).json(updated);
+  } catch (error: any) {
+    res.status(error.status || 400).json({ error: error.message || error });
+  }
+};
+
 export const OrderController = {
   createOrder,
   getMyOrders, // This should call OrderService.getMyOrders
   getAllOrders,
   getOrderById, // This should call OrderService.getOrderById
   updateOrderStatus,
+  getSellerOrders,
+  updateSellerOrderStatus,
 };

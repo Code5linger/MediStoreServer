@@ -39,4 +39,15 @@ router.patch(
   OrderController.updateOrderStatus,
 ); // Update status
 
+router.get(
+  '/seller/orders',
+  auth(UserRole.SELLER),
+  OrderController.getSellerOrders,
+);
+router.patch(
+  '/seller/orders/:id/status',
+  auth(UserRole.SELLER),
+  OrderController.updateSellerOrderStatus,
+);
+
 export const OrderRouter = router;
