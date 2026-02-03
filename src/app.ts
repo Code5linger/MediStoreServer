@@ -12,14 +12,14 @@ const app: Application = express();
 
 app.use(express.json());
 
-app.all('/api/auth/*splat', toNodeHandler(auth));
-
 app.use(
   cors!({
     origin: process.env.APP_URL || 'http://localhost:3000',
     credentials: true,
   }),
 );
+
+app.all('/api/auth/*splat', toNodeHandler(auth));
 
 app.use('/medicine', MedicineRouter);
 

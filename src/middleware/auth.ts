@@ -38,12 +38,12 @@ const auth = (...roles: UserRole[]) => {
         });
       }
 
-      if (!session.user.emailVerified) {
-        return res.status(401).json({
-          success: false,
-          message: 'Email not verified!',
-        });
-      }
+      // if (!session.user.emailVerified) {
+      //   return res.status(401).json({
+      //     success: false,
+      //     message: 'Email not verified!',
+      //   });
+      // }
 
       req.user = {
         id: session.user.id,
@@ -57,7 +57,7 @@ const auth = (...roles: UserRole[]) => {
       if (roles.length && !roles.includes(req.user.role as UserRole)) {
         return res.status(403).json({
           success: false,
-          message: 'Forbidden!',
+          message: 'Forbidden! O_o',
         });
       }
       next();

@@ -91,16 +91,32 @@ const createOrder = async (
   }
 
   // 3️⃣ Create order and order items
+  // const order = await prisma.order.create({
+  //   data: {
+  //     customerId,
+  //     shippingAddress: data.shippingAddress,
+  //     totalAmount,
+  //     items: {
+  //       create: data.items.map((item) => ({
+  //         medicineId: item.medicineId,
+  //         quantity: item.quantity,
+  //         price: medicineMap.get(item.medicineId)!, // use price from previous fetch
+  //       })),
+  //     },
+  //   },
+  //   include: { items: true },
+  // });
+
   const order = await prisma.order.create({
     data: {
-      customerId,
+      customerId: String(customerId), // ensure it’s text
       shippingAddress: data.shippingAddress,
       totalAmount,
       items: {
         create: data.items.map((item) => ({
           medicineId: item.medicineId,
           quantity: item.quantity,
-          price: medicineMap.get(item.medicineId)!, // use price from previous fetch
+          price: medicineMap.get(item.medicineId)!,
         })),
       },
     },

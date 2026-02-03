@@ -1,9 +1,20 @@
 import type { Request, Response } from 'express';
 import { OrderService } from './order.service';
 
+// const createOrder = async (req: Request, res: Response) => {
+//   try {
+//     const user = req.user!;
+//     const result = await OrderService.createOrder(req.body, user.id);
+//     res.status(201).json(result);
+//   } catch (error: any) {
+//     res.status(400).json({ error: error.message || error });
+//   }
+// };
+
 const createOrder = async (req: Request, res: Response) => {
   try {
     const user = req.user!;
+    console.log('Creating order for customerId:', user.id); // <-- check this
     const result = await OrderService.createOrder(req.body, user.id);
     res.status(201).json(result);
   } catch (error: any) {
