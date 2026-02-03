@@ -10,4 +10,7 @@ router.get('/', MedicineController.getAllMedicine);
 
 router.get('/sellers', MedicineController.getAllSellers);
 
+router.put('/:id', auth(UserRole.SELLER), MedicineController.updateMedicine);
+router.delete('/:id', auth(UserRole.SELLER), MedicineController.deleteMedicine);
+
 export const MedicineRouter = router;

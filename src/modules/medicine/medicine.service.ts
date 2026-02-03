@@ -177,8 +177,71 @@ const getAllSellers = async () => {
   return sellers;
 };
 
+const updateMedicine = async (
+  id: number,
+  data: {
+    name?: string;
+    description?: string;
+    price?: number;
+    stock?: number;
+    image?: string;
+    categoryId?: number;
+  },
+  userId: string,
+) => {
+  const existing = await prisma.medicine.findUnique({ where: { id } });
+
+  if (!existing) {
+    const err: any = new Error('Medicine not found');
+    err.status = 404;
+    throw err;
+  }
+
+  if (existing.sellerId !== userId) {
+    const err: any = new Error('You can only update your own medicines');
+    err.status = 403;
+    throw err;
+  }
+
+  if (data.categoryId) {
+    const category = await prisma.category.findUnique({
+      where: { id: data.categoryId },
+    });
+    if (!category) {
+      throw new Error('Category not found');
+    }
+  }
+
+  const updated = await prisma.medicine.update({
+    where: { id },
+    data,
+  });
+
+  return updated;
+};
+
+const deleteMedicine = async (id: number, userId: string) => {
+  const existing = await prisma.medicine.findUnique({ where: { id } });
+
+  if (!existing) {
+    const err: any = new Error('Medicine not found');
+    err.status = 404;
+    throw err;
+  }
+
+  if (existing.sellerId !== userId) {
+    const err: any = new Error('You can only delete your own medicines');
+    err.status = 403;
+    throw err;
+  }
+
+  await prisma.medicine.delete({ where: { id } });
+};
+
 export const MedicineService = {
   createMedicine,
   getAllMedicine,
   getAllSellers,
+  updateMedicine,
+  deleteMedicine,
 };

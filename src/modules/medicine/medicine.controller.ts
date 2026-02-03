@@ -65,8 +65,48 @@ const getAllSellers = async (req: Request, res: Response) => {
   }
 };
 
+const updateMedicine = async (req: Request, res: Response) => {
+  try {
+    const user = req.user;
+    if (!user) {
+      return res.status(401).json({ error: 'Unauthorized' });
+    }
+
+    const id = Number(req.params.id);
+    if (isNaN(id)) {
+      return res.status(400).json({ error: 'Invalid medicine ID' });
+    }
+
+    const result = await MedicineService.updateMedicine(id, req.body, user.id);
+    res.status(200).json(result);
+  } catch (error: any) {
+    res.status(error.status || 400).json({ error: error.message || error });
+  }
+};
+
+const deleteMedicine = async (req: Request, res: Response) => {
+  try {
+    const user = req.user;
+    if (!user) {
+      return res.status(401).json({ error: 'Unauthorized' });
+    }
+
+    const id = Number(req.params.id);
+    if (isNaN(id)) {
+      return res.status(400).json({ error: 'Invalid medicine ID' });
+    }
+
+    await MedicineService.deleteMedicine(id, user.id);
+    res.status(200).json({ message: 'Medicine deleted successfully' });
+  } catch (error: any) {
+    res.status(error.status || 400).json({ error: error.message || error });
+  }
+};
+
 export const MedicineController = {
   createMedicine,
+  updateMedicine,
+  deleteMedicine,
   getAllMedicine,
   getAllSellers,
 };
