@@ -163,6 +163,7 @@
 
 // order.service.ts - COMPLETE FILE
 
+import type { ORDER_STATUS } from '../../../generated/prisma/enums';
 import { prisma } from '../../lib/prisma';
 
 interface CreateOrderData {
@@ -300,7 +301,7 @@ const getOrderById = async (orderId: string, customerId: string) => {
 };
 
 // Update order status (for admin)
-const updateOrderStatus = async (orderId: number, status: string) => {
+const updateOrderStatus = async (orderId: number, status: ORDER_STATUS) => {
   const order = await prisma.order.findUnique({
     where: { id: orderId },
   });

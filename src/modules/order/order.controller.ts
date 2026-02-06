@@ -144,7 +144,22 @@ const getAllOrders = async (_req: Request, res: Response) => {
 const getOrderById = async (req: Request, res: Response) => {
   try {
     const user = req.user!;
-    const orderId = req.params.id;
+    const orderIdParam = req.params.id;
+
+    // Validate orderId exists
+    if (!orderIdParam) {
+      return res.status(400).json({ error: 'Order ID is required' });
+    }
+
+    // Handle array case
+    const orderId = Array.isArray(orderIdParam)
+      ? orderIdParam[0]
+      : orderIdParam;
+
+    // Ensure it's a string
+    if (!orderId || typeof orderId !== 'string') {
+      return res.status(400).json({ error: 'Order ID is required' });
+    }
 
     const order = await OrderService.getOrderById(orderId, user.id);
     res.json(order);
@@ -155,8 +170,25 @@ const getOrderById = async (req: Request, res: Response) => {
 
 const updateOrderStatus = async (req: Request, res: Response) => {
   try {
-    const orderId = parseInt(req.params.id);
+    const orderIdParam = req.params.id;
     const { status } = req.body;
+
+    // Validate orderId exists
+    if (!orderIdParam) {
+      return res.status(400).json({ error: 'Order ID is required' });
+    }
+
+    // Handle array case
+    const orderIdStr = Array.isArray(orderIdParam)
+      ? orderIdParam[0]
+      : orderIdParam;
+
+    // Ensure it's a string
+    if (!orderIdStr || typeof orderIdStr !== 'string') {
+      return res.status(400).json({ error: 'Order ID is required' });
+    }
+
+    const orderId = parseInt(orderIdStr, 10);
 
     if (isNaN(orderId)) {
       return res.status(400).json({ error: 'Invalid order ID' });

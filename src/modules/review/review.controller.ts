@@ -133,13 +133,33 @@ const createReview = async (req: Request, res: Response) => {
   }
 };
 
+// const getAllReviews = async (req: Request, res: Response) => {
+//   try {
+//     const { medicineId } = req.query;
+
+//     const filters = medicineId
+//       ? { medicineId: parseInt(medicineId as string) }
+//       : undefined;
+
+//     const reviews = await ReviewService.getAllReviews(filters);
+//     res.json(reviews);
+//   } catch (error: any) {
+//     res.status(400).json({ error: error.message || error });
+//   }
+// };
+
 const getAllReviews = async (req: Request, res: Response) => {
   try {
     const { medicineId } = req.query;
 
-    const filters = medicineId
-      ? { medicineId: parseInt(medicineId as string) }
-      : undefined;
+    // Fix for line 174 - only create filters object if medicineId exists and is valid
+    let filters;
+    if (medicineId && typeof medicineId === 'string') {
+      const parsedId = parseInt(medicineId, 10);
+      if (!isNaN(parsedId)) {
+        filters = { medicineId: parsedId };
+      }
+    }
 
     const reviews = await ReviewService.getAllReviews(filters);
     res.json(reviews);
@@ -158,6 +178,31 @@ const getMyReviews = async (req: Request, res: Response) => {
   }
 };
 
+// const getReviewById = async (req: Request, res: Response) => {
+//   try {
+//     const user = req.user!;
+
+//     // Ensure the param exists
+//     const idParam = req.params.id;
+//     if (!idParam) {
+//       return res.status(400).json({ error: 'Review ID is required' });
+//     }
+
+//     // If idParam is an array, take the first element
+//     const idStr = Array.isArray(idParam) ? idParam[0] : idParam;
+
+//     const reviewId = parseInt(idStr, 10);
+//     if (isNaN(reviewId)) {
+//       return res.status(400).json({ error: 'Invalid review ID' });
+//     }
+
+//     const review = await ReviewService.getReviewById(reviewId, user.id);
+//     res.json(review);
+//   } catch (error: any) {
+//     res.status(400).json({ error: error.message || error });
+//   }
+// };
+
 const getReviewById = async (req: Request, res: Response) => {
   try {
     const user = req.user!;
@@ -170,6 +215,11 @@ const getReviewById = async (req: Request, res: Response) => {
 
     // If idParam is an array, take the first element
     const idStr = Array.isArray(idParam) ? idParam[0] : idParam;
+
+    // Add explicit type guard
+    if (!idStr || typeof idStr !== 'string') {
+      return res.status(400).json({ error: 'Review ID is required' });
+    }
 
     const reviewId = parseInt(idStr, 10);
     if (isNaN(reviewId)) {
@@ -228,9 +278,41 @@ const deleteReview = async (req: Request, res: Response) => {
   }
 };
 
+// const getAverageRating = async (req: Request, res: Response) => {
+//   try {
+//     const medicineId = parseInt(req.params.medicineId);
+//     if (isNaN(medicineId)) {
+//       return res.status(400).json({ error: 'Invalid medicine ID' });
+//     }
+
+//     const result = await ReviewService.getAverageRating(medicineId);
+//     res.json(result);
+//   } catch (error: any) {
+//     res.status(400).json({ error: error.message || error });
+//   }
+// };
+
 const getAverageRating = async (req: Request, res: Response) => {
   try {
-    const medicineId = parseInt(req.params.medicineId);
+    // Fix - validate medicineId param exists and is a string
+    const medicineIdParam = req.params.medicineId;
+
+    if (!medicineIdParam) {
+      return res.status(400).json({ error: 'Medicine ID is required' });
+    }
+
+    // Handle array case (though unlikely for route params)
+    const idStr = Array.isArray(medicineIdParam)
+      ? medicineIdParam[0]
+      : medicineIdParam;
+
+    // Add explicit check after array handling
+    if (!idStr || typeof idStr !== 'string') {
+      return res.status(400).json({ error: 'Medicine ID is required' });
+    }
+
+    const medicineId = parseInt(idStr, 10);
+
     if (isNaN(medicineId)) {
       return res.status(400).json({ error: 'Invalid medicine ID' });
     }

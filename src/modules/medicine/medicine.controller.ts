@@ -36,19 +36,59 @@ const createMedicine = async (req: Request, res: Response) => {
 //   }
 // };
 
+// const getAllMedicine = async (req: Request, res: Response) => {
+//   try {
+//     const { search, categoryId, minPrice, maxPrice, sellerId, sortBy } =
+//       req.query;
+
+//     const result = await MedicineService.getAllMedicine({
+//       search: typeof search === 'string' ? search : undefined,
+//       categoryId: categoryId ? Number(categoryId) : undefined,
+//       minPrice: minPrice ? Number(minPrice) : undefined,
+//       maxPrice: maxPrice ? Number(maxPrice) : undefined,
+//       sellerId: typeof sellerId === 'string' ? sellerId : undefined,
+//       sortBy: sortBy as any,
+//     });
+
+//     res.status(200).json(result);
+//   } catch (error) {
+//     res.status(400).json({ error });
+//   }
+// };
+
 const getAllMedicine = async (req: Request, res: Response) => {
   try {
     const { search, categoryId, minPrice, maxPrice, sellerId, sortBy } =
       req.query;
 
-    const result = await MedicineService.getAllMedicine({
-      search: typeof search === 'string' ? search : undefined,
-      categoryId: categoryId ? Number(categoryId) : undefined,
-      minPrice: minPrice ? Number(minPrice) : undefined,
-      maxPrice: maxPrice ? Number(maxPrice) : undefined,
-      sellerId: typeof sellerId === 'string' ? sellerId : undefined,
-      sortBy: sortBy as any,
-    });
+    // Build the payload object conditionally
+    const payload: any = {};
+
+    if (typeof search === 'string') {
+      payload.search = search;
+    }
+
+    if (categoryId) {
+      payload.categoryId = Number(categoryId);
+    }
+
+    if (minPrice) {
+      payload.minPrice = Number(minPrice);
+    }
+
+    if (maxPrice) {
+      payload.maxPrice = Number(maxPrice);
+    }
+
+    if (typeof sellerId === 'string') {
+      payload.sellerId = sellerId;
+    }
+
+    if (sortBy) {
+      payload.sortBy = sortBy;
+    }
+
+    const result = await MedicineService.getAllMedicine(payload);
 
     res.status(200).json(result);
   } catch (error) {
