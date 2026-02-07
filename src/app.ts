@@ -66,6 +66,7 @@ app.use(express.json());
 const allowedOrigins = [
   'http://localhost:3000',
   'http://localhost:5000',
+  'https://medi-store-client-five.vercel.app',
   process.env.APP_URL,
   // Add your production frontend URL here when you deploy
   // 'https://your-frontend.vercel.app',
@@ -95,11 +96,11 @@ app.use(
 app.all('/api/auth/*', toNodeHandler(auth));
 
 // API routes - Add /api prefix
-app.use('/api/medicine', MedicineRouter);
-app.use('/api/categories', CategoryRouter);
-app.use('/api/orders', OrderRouter);
-app.use('/api/reviews', ReviewRouter);
-app.use('/api/admin', AdminRouter);
+app.use('/medicine', MedicineRouter);
+app.use('/categories', CategoryRouter);
+app.use('/orders', OrderRouter);
+app.use('/reviews', ReviewRouter);
+app.use('/admin', AdminRouter);
 
 app.get('/', (req, res) => {
   console.log('Hello World!');
