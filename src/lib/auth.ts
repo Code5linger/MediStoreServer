@@ -211,11 +211,12 @@ export const auth = betterAuth({
   }),
 
   // CRITICAL: Update this for production
-  baseURL: process.env.BETTER_AUTH_URL || 'http://localhost:5000',
+  baseURL: process.env.BETTER_AUTH_URL,
 
   trustedOrigins: [
     'http://localhost:3000',
     'http://localhost:5000',
+    'https://medi-store-client-five.vercel.app',
     process.env.APP_URL || 'http://localhost:3000',
   ],
 
