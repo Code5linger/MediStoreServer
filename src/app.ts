@@ -30,7 +30,9 @@ app.use(
 );
 
 // Better Auth routes
-app.all('/api/auth/*splat', toNodeHandler(auth));
+// app.all('/api/auth/*splat', toNodeHandler(auth));
+
+app.all('/api/auth/*', toNodeHandler(auth));
 
 // API routes
 app.use('/medicine', MedicineRouter);
