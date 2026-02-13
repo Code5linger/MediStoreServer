@@ -93,7 +93,8 @@ app.use(
 );
 
 // Better Auth routes
-app.all('/api/auth/*', toNodeHandler(auth));
+// app.all('/api/auth/*', toNodeHandler(auth));
+app.all('/api/auth/*splat', toNodeHandler(auth));
 
 // API routes - Add /api prefix
 app.use('/medicine', MedicineRouter);
