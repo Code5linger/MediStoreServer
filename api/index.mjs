@@ -489,16 +489,8 @@ var auth = betterAuth({
     provider: "postgresql"
   }),
   // baseURL: process.env.BETTER_AUTH_URL || 'http://localhost:5000',
-  baseURL: process.env.BETTER_AUTH_URL || "http://localhost:3000",
-  // trustedOrigins: [
-  //   'http://localhost:3000',
-  //   'http://localhost:5000',
-  //   'https://medi-store-client-five.vercel.app', // ✅ ADD THIS
-  // ],
-  trustedOrigins: [
-    "http://localhost:3000",
-    "https://medi-store-client-five.vercel.app"
-  ],
+  baseURL: process.env.BETTER_AUTH_URL,
+  trustedOrigins: ["https://medi-store-client-five.vercel.app"],
   user: {
     additionalFields: {
       role: {
@@ -589,14 +581,6 @@ var auth = betterAuth({
       // 5 minutes
     }
   },
-  // advanced: {
-  //   cookiePrefix: 'medistore',
-  //   useSecureCookies: process.env.NODE_ENV === 'production', // ✅ UNCOMMENT THIS
-  //   cookieSameSite: 'none', // ✅ ADD THIS for cross-domain
-  //   crossSubDomainCookies: {
-  //     enabled: true, // ✅ CHANGE TO TRUE
-  //   },
-  // },
   advanced: {
     cookiePrefix: "medistore",
     useSecureCookies: process.env.NODE_ENV === "production",
@@ -612,10 +596,21 @@ var auth = betterAuth({
 var auth2 = (...roles) => {
   return async (req, res, next) => {
     try {
+      console.log("=== AUTH MIDDLEWARE DEBUG ===");
+      console.log("Path:", req.path);
+      console.log("Method:", req.method);
+      console.log("Headers:", JSON.stringify(req.headers, null, 2));
+      console.log("Cookie header:", req.headers.cookie);
+      console.log("===========================");
       const session = await auth.api.getSession({
         headers: req.headers
       });
+      console.log("Session result:", session ? "Found" : "NOT FOUND");
+      if (session) {
+        console.log("User:", session.user.email, "Role:", session.user.role);
+      }
       if (!session) {
+        console.log("\u274C No session - returning 401");
         return res.status(401).json({
           success: false,
           message: "You are not authorized!"
@@ -625,18 +620,21 @@ var auth2 = (...roles) => {
         id: session.user.id,
         email: session.user.email,
         name: session.user.name,
-        // role: session.user.role as string,
         role: session.user.role,
         emailVerified: session.user.emailVerified
       };
       if (roles.length && !roles.includes(req.user.role)) {
+        console.log("\u274C Wrong role - returning 403");
+        console.log("Required:", roles, "Got:", req.user.role);
         return res.status(403).json({
           success: false,
           message: "Forbidden! O_o"
         });
       }
+      console.log("\u2705 Auth passed");
       next();
     } catch (error) {
+      console.error("\u274C Auth error:", error);
       next(error);
     }
   };
@@ -1102,15 +1100,6 @@ var OrderController = {
 
 // src/modules/order/order.router.ts
 var router3 = Router2();
-router3.post("/", auth_default("CUSTOMER" /* CUSTOMER */), OrderController.createOrder);
-router3.get("/me", auth_default("CUSTOMER" /* CUSTOMER */), OrderController.getMyOrders);
-router3.get("/me/:id", auth_default("CUSTOMER" /* CUSTOMER */), OrderController.getOrderById);
-router3.get("/", auth_default("ADMIN" /* ADMIN */), OrderController.getAllOrders);
-router3.patch(
-  "/:id/status",
-  auth_default("ADMIN" /* ADMIN */),
-  OrderController.updateOrderStatus
-);
 router3.get(
   "/seller/orders",
   auth_default("SELLER" /* SELLER */),
@@ -1120,6 +1109,15 @@ router3.patch(
   "/seller/orders/:id/status",
   auth_default("SELLER" /* SELLER */),
   OrderController.updateSellerOrderStatus
+);
+router3.post("/", auth_default("CUSTOMER" /* CUSTOMER */), OrderController.createOrder);
+router3.get("/me", auth_default("CUSTOMER" /* CUSTOMER */), OrderController.getMyOrders);
+router3.get("/me/:id", auth_default("CUSTOMER" /* CUSTOMER */), OrderController.getOrderById);
+router3.get("/admin/all", auth_default("ADMIN" /* ADMIN */), OrderController.getAllOrders);
+router3.patch(
+  "/:id/status",
+  auth_default("ADMIN" /* ADMIN */),
+  OrderController.updateOrderStatus
 );
 var OrderRouter = router3;
 
@@ -1492,12 +1490,8 @@ var AdminRouter = router5;
 var app = express2();
 app.use(express2.json());
 var allowedOrigins = [
-  "http://localhost:3000",
-  "http://localhost:5000",
   "https://medi-store-client-five.vercel.app",
   process.env.APP_URL
-  // Add your production frontend URL here when you deploy
-  // 'https://your-frontend.vercel.app',
 ].filter(Boolean);
 app.use(
   cors({
@@ -1511,13 +1505,40 @@ app.use(
       }
     },
     credentials: true,
-    // CRITICAL for cookies
     methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
     allowedHeaders: ["Content-Type", "Authorization", "Cookie"],
     exposedHeaders: ["Set-Cookie"]
   })
 );
 app.all("/api/auth/*splat", toNodeHandler(auth));
+app.get("/debug/session", async (req, res) => {
+  try {
+    console.log("=== DEBUG SESSION ENDPOINT ===");
+    console.log("Headers:", req.headers);
+    console.log("Cookie:", req.headers.cookie);
+    const session = await auth.api.getSession({
+      headers: req.headers
+      // ← Fix: Cast to any
+    });
+    console.log("Session found:", !!session);
+    if (session) {
+      console.log("User:", session.user.email, "Role:", session.user.role);
+    }
+    res.json({
+      hasSession: !!session,
+      session: session ? {
+        userId: session.user.id,
+        email: session.user.email,
+        role: session.user.role
+      } : null,
+      cookieReceived: !!req.headers.cookie,
+      cookieValue: req.headers.cookie ? "Present" : "Missing"
+    });
+  } catch (error) {
+    console.error("Debug session error:", error);
+    res.status(500).json({ error: String(error) });
+  }
+});
 app.use("/medicine", MedicineRouter);
 app.use("/categories", CategoryRouter);
 app.use("/orders", OrderRouter);
