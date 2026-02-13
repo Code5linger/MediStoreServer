@@ -477,10 +477,8 @@ import { prismaAdapter } from "better-auth/adapters/prisma";
 import nodemailer from "nodemailer";
 var transporter = nodemailer.createTransport({
   host: "smtp.gmail.com",
-  // Google
   port: 587,
   secure: false,
-  // Use true for port 465, false for port 587
   auth: {
     user: process.env.APP_USER,
     pass: process.env.APP_PASSWORD
@@ -490,7 +488,17 @@ var auth = betterAuth({
   database: prismaAdapter(prisma, {
     provider: "postgresql"
   }),
-  trustedOrigins: [process.env.APP_URL],
+  // baseURL: process.env.BETTER_AUTH_URL || 'http://localhost:5000',
+  baseURL: process.env.BETTER_AUTH_URL || "http://localhost:3000",
+  // trustedOrigins: [
+  //   'http://localhost:3000',
+  //   'http://localhost:5000',
+  //   'https://medi-store-client-five.vercel.app', // ✅ ADD THIS
+  // ],
+  trustedOrigins: [
+    "http://localhost:3000",
+    "https://medi-store-client-five.vercel.app"
+  ],
   user: {
     additionalFields: {
       role: {
@@ -511,9 +519,7 @@ var auth = betterAuth({
   },
   emailAndPassword: {
     enabled: true,
-    // autoSignIn: false,
     autoSignIn: true,
-    // requireEmailVerification: true,
     requireEmailVerification: false
   },
   emailVerification: {
@@ -552,11 +558,10 @@ var auth = betterAuth({
             </html>
 `;
         const info = await transporter.sendMail({
-          from: '"PH-MODULE-24" <maddison53@ethereal.email>',
+          from: '"MEDISTORE" <noreply@medistore.com>',
           to: user.email,
           subject: "Verify your email",
           html
-          // HTML version of the message
         });
         console.log("Message sent: ", info.messageId);
       } catch (error) {
@@ -573,19 +578,32 @@ var auth = betterAuth({
       clientSecret: process.env.GOOGLE_CLIENT_SECRET
     }
   },
-  // 🤖
   session: {
+    expiresIn: 60 * 60 * 24 * 7,
+    // 7 days
+    updateAge: 60 * 60 * 24,
+    // 1 day
     cookieCache: {
       enabled: true,
       maxAge: 5 * 60
       // 5 minutes
     }
   },
+  // advanced: {
+  //   cookiePrefix: 'medistore',
+  //   useSecureCookies: process.env.NODE_ENV === 'production', // ✅ UNCOMMENT THIS
+  //   cookieSameSite: 'none', // ✅ ADD THIS for cross-domain
+  //   crossSubDomainCookies: {
+  //     enabled: true, // ✅ CHANGE TO TRUE
+  //   },
+  // },
   advanced: {
     cookiePrefix: "medistore",
-    // useSecureCookies: process.env.NODE_ENV === 'production',
+    useSecureCookies: process.env.NODE_ENV === "production",
+    cookieSameSite: "none",
+    // ✅ Must be 'none' for cross-domain
     crossSubDomainCookies: {
-      enabled: false
+      enabled: true
     }
   }
 });
@@ -1473,11 +1491,27 @@ var AdminRouter = router5;
 // src/app.ts
 var app = express2();
 app.use(express2.json());
+var allowedOrigins = [
+  "http://localhost:3000",
+  "http://localhost:5000",
+  "https://medi-store-client-five.vercel.app",
+  process.env.APP_URL
+  // Add your production frontend URL here when you deploy
+  // 'https://your-frontend.vercel.app',
+].filter(Boolean);
 app.use(
   cors({
-    origin: process.env.APP_URL || "http://localhost:3000",
+    origin: function(origin, callback) {
+      if (!origin) return callback(null, true);
+      if (allowedOrigins.indexOf(origin) !== -1) {
+        callback(null, true);
+      } else {
+        console.log("Origin not allowed by CORS:", origin);
+        callback(null, true);
+      }
+    },
     credentials: true,
-    // CRITICAL
+    // CRITICAL for cookies
     methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
     allowedHeaders: ["Content-Type", "Authorization", "Cookie"],
     exposedHeaders: ["Set-Cookie"]
