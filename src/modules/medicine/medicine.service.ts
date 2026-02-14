@@ -29,31 +29,6 @@ const createMedicine = async (
   return medicine;
 };
 
-// const getAllMedicine = async (payload: { search?: string }) => {
-//   const allMedicine = await prisma.medicine.findMany({
-//     ...(payload.search && {
-//       where: {
-//         OR: [
-//           {
-//             name: {
-//               contains: payload.search,
-//               mode: 'insensitive',
-//             },
-//           },
-//           {
-//             description: {
-//               contains: payload.search,
-//               mode: 'insensitive',
-//             },
-//           },
-//         ],
-//       },
-//     }),
-//   });
-
-//   return allMedicine;
-// };
-
 interface GetAllMedicinePayload {
   search?: string;
   categoryId?: number;
@@ -159,7 +134,6 @@ const getAllMedicine = async (payload: GetAllMedicinePayload) => {
   return allMedicine;
 };
 
-// Get unique sellers for filter dropdown
 const getAllSellers = async () => {
   const sellers = await prisma.user.findMany({
     where: {
@@ -221,7 +195,12 @@ const updateMedicine = async (
 };
 
 const deleteMedicine = async (id: number, userId: string) => {
-  const existing = await prisma.medicine.findUnique({ where: { id } });
+  const existing = await prisma.medicine.findUnique({
+    where: { id },
+    include: {
+      orderItems: true,
+    },
+  });
 
   if (!existing) {
     const err: any = new Error('Medicine not found');
@@ -232,6 +211,12 @@ const deleteMedicine = async (id: number, userId: string) => {
   if (existing.sellerId !== userId) {
     const err: any = new Error('You can only delete your own medicines');
     err.status = 403;
+    throw err;
+  }
+
+  if (existing.orderItems.length > 0) {
+    const err: any = new Error('Cannot delete medicine that has been ordered');
+    err.status = 400;
     throw err;
   }
 

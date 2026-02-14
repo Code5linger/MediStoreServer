@@ -1,23 +1,11 @@
-// ========================
-// Prisma Client Generator
-// ========================
-
 generator client {
   provider = "prisma-client"
   output   = "../generated/prisma"
 }
 
-// ========================
-// Datasource
-// ========================
-
 datasource db {
   provider = "postgresql"
 }
-
-// ========================
-// Auth Models (Better Auth)
-// ========================
 
 model User {
   id            String   @id @default(cuid())
@@ -31,10 +19,8 @@ model User {
   sessions Session[]
   accounts Account[]
 
-  // Seller relations
   medicines Medicine[] @relation("SellerMedicines")
 
-  // Customer relations
   orders  Order[]  @relation("CustomerOrders")
   reviews Review[]
 
@@ -95,17 +81,6 @@ model Verification {
   @@map("verification")
 }
 
-// ========================
-// Enums
-// ========================
-
-// 🤖
-// enum ROLE {
-//   CUSTOMER
-//   SELLER
-//   ADMIN
-// }
-
 enum ORDER_STATUS {
   PLACED
   PROCESSING
@@ -113,10 +88,6 @@ enum ORDER_STATUS {
   DELIVERED
   CANCELLED
 }
-
-// ========================
-// Business Models
-// ========================
 
 model Category {
   id        Int      @id @default(autoincrement())
@@ -137,11 +108,9 @@ model Medicine {
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
-  // Seller
   sellerId String
   seller   User   @relation("SellerMedicines", fields: [sellerId], references: [id])
 
-  // Category
   categoryId Int
   category   Category @relation(fields: [categoryId], references: [id])
 
@@ -157,7 +126,6 @@ model Order {
   createdAt       DateTime     @default(now())
   updatedAt       DateTime     @updatedAt
 
-  // Customer
   customerId String
   customer   User   @relation("CustomerOrders", fields: [customerId], references: [id])
 

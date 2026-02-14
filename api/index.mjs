@@ -15,7 +15,7 @@ var config = {
   "clientVersion": "7.3.0",
   "engineVersion": "9d6ad21cbbceab97458517b147a6a09ff43aa735",
   "activeProvider": "postgresql",
-  "inlineSchema": '// ========================\n// Prisma Client Generator\n// ========================\n\ngenerator client {\n  provider = "prisma-client"\n  output   = "../generated/prisma"\n}\n\n// ========================\n// Datasource\n// ========================\n\ndatasource db {\n  provider = "postgresql"\n}\n\n// ========================\n// Auth Models (Better Auth)\n// ========================\n\nmodel User {\n  id            String   @id @default(cuid())\n  name          String\n  email         String   @unique\n  emailVerified Boolean  @default(false)\n  image         String?\n  createdAt     DateTime @default(now())\n  updatedAt     DateTime @updatedAt\n\n  sessions Session[]\n  accounts Account[]\n\n  // Seller relations\n  medicines Medicine[] @relation("SellerMedicines")\n\n  // Customer relations\n  orders  Order[]  @relation("CustomerOrders")\n  reviews Review[]\n\n  role   String  @default("CUSTOMER")\n  phone  String?\n  status String? @default("ACTIVE")\n\n  @@map("user")\n}\n\nmodel Session {\n  id        String   @id\n  expiresAt DateTime\n  token     String   @unique\n  createdAt DateTime @default(now())\n  updatedAt DateTime @updatedAt\n  ipAddress String?\n  userAgent String?\n\n  userId String\n  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)\n\n  @@index([userId])\n  @@map("session")\n}\n\nmodel Account {\n  id         String @id\n  accountId  String\n  providerId String\n  userId     String\n  user       User   @relation(fields: [userId], references: [id], onDelete: Cascade)\n\n  accessToken           String?\n  refreshToken          String?\n  idToken               String?\n  accessTokenExpiresAt  DateTime?\n  refreshTokenExpiresAt DateTime?\n  scope                 String?\n  password              String?\n\n  createdAt DateTime @default(now())\n  updatedAt DateTime @updatedAt\n\n  @@index([userId])\n  @@map("account")\n}\n\nmodel Verification {\n  id         String   @id\n  identifier String\n  value      String\n  expiresAt  DateTime\n  createdAt  DateTime @default(now())\n  updatedAt  DateTime @updatedAt\n\n  @@index([identifier])\n  @@map("verification")\n}\n\n// ========================\n// Enums\n// ========================\n\n// \u{1F916}\n// enum ROLE {\n//   CUSTOMER\n//   SELLER\n//   ADMIN\n// }\n\nenum ORDER_STATUS {\n  PLACED\n  PROCESSING\n  SHIPPED\n  DELIVERED\n  CANCELLED\n}\n\n// ========================\n// Business Models\n// ========================\n\nmodel Category {\n  id        Int      @id @default(autoincrement())\n  name      String   @unique\n  createdAt DateTime @default(now())\n  updatedAt DateTime @updatedAt\n\n  medicines Medicine[]\n}\n\nmodel Medicine {\n  id          Int      @id @default(autoincrement())\n  name        String\n  description String?\n  price       Float\n  stock       Int\n  image       String?\n  createdAt   DateTime @default(now())\n  updatedAt   DateTime @updatedAt\n\n  // Seller\n  sellerId String\n  seller   User   @relation("SellerMedicines", fields: [sellerId], references: [id])\n\n  // Category\n  categoryId Int\n  category   Category @relation(fields: [categoryId], references: [id])\n\n  reviews    Review[]\n  orderItems OrderItem[]\n}\n\nmodel Order {\n  id              Int          @id @default(autoincrement())\n  totalAmount     Float\n  status          ORDER_STATUS @default(PLACED)\n  shippingAddress String\n  createdAt       DateTime     @default(now())\n  updatedAt       DateTime     @updatedAt\n\n  // Customer\n  customerId String\n  customer   User   @relation("CustomerOrders", fields: [customerId], references: [id])\n\n  items OrderItem[]\n}\n\nmodel OrderItem {\n  id       Int   @id @default(autoincrement())\n  quantity Int\n  price    Float\n\n  orderId Int\n  order   Order @relation(fields: [orderId], references: [id])\n\n  medicineId Int\n  medicine   Medicine @relation(fields: [medicineId], references: [id])\n}\n\nmodel Review {\n  id        Int      @id @default(autoincrement())\n  rating    Int\n  comment   String?\n  createdAt DateTime @default(now())\n  updatedAt DateTime @updatedAt\n\n  customerId String\n  customer   User   @relation(fields: [customerId], references: [id])\n\n  medicineId Int\n  medicine   Medicine @relation(fields: [medicineId], references: [id])\n}\n',
+  "inlineSchema": 'generator client {\n  provider = "prisma-client"\n  output   = "../generated/prisma"\n}\n\ndatasource db {\n  provider = "postgresql"\n}\n\nmodel User {\n  id            String   @id @default(cuid())\n  name          String\n  email         String   @unique\n  emailVerified Boolean  @default(false)\n  image         String?\n  createdAt     DateTime @default(now())\n  updatedAt     DateTime @updatedAt\n\n  sessions Session[]\n  accounts Account[]\n\n  medicines Medicine[] @relation("SellerMedicines")\n\n  orders  Order[]  @relation("CustomerOrders")\n  reviews Review[]\n\n  role   String  @default("CUSTOMER")\n  phone  String?\n  status String? @default("ACTIVE")\n\n  @@map("user")\n}\n\nmodel Session {\n  id        String   @id\n  expiresAt DateTime\n  token     String   @unique\n  createdAt DateTime @default(now())\n  updatedAt DateTime @updatedAt\n  ipAddress String?\n  userAgent String?\n\n  userId String\n  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)\n\n  @@index([userId])\n  @@map("session")\n}\n\nmodel Account {\n  id         String @id\n  accountId  String\n  providerId String\n  userId     String\n  user       User   @relation(fields: [userId], references: [id], onDelete: Cascade)\n\n  accessToken           String?\n  refreshToken          String?\n  idToken               String?\n  accessTokenExpiresAt  DateTime?\n  refreshTokenExpiresAt DateTime?\n  scope                 String?\n  password              String?\n\n  createdAt DateTime @default(now())\n  updatedAt DateTime @updatedAt\n\n  @@index([userId])\n  @@map("account")\n}\n\nmodel Verification {\n  id         String   @id\n  identifier String\n  value      String\n  expiresAt  DateTime\n  createdAt  DateTime @default(now())\n  updatedAt  DateTime @updatedAt\n\n  @@index([identifier])\n  @@map("verification")\n}\n\nenum ORDER_STATUS {\n  PLACED\n  PROCESSING\n  SHIPPED\n  DELIVERED\n  CANCELLED\n}\n\nmodel Category {\n  id        Int      @id @default(autoincrement())\n  name      String   @unique\n  createdAt DateTime @default(now())\n  updatedAt DateTime @updatedAt\n\n  medicines Medicine[]\n}\n\nmodel Medicine {\n  id          Int      @id @default(autoincrement())\n  name        String\n  description String?\n  price       Float\n  stock       Int\n  image       String?\n  createdAt   DateTime @default(now())\n  updatedAt   DateTime @updatedAt\n\n  sellerId String\n  seller   User   @relation("SellerMedicines", fields: [sellerId], references: [id])\n\n  categoryId Int\n  category   Category @relation(fields: [categoryId], references: [id])\n\n  reviews    Review[]\n  orderItems OrderItem[]\n}\n\nmodel Order {\n  id              Int          @id @default(autoincrement())\n  totalAmount     Float\n  status          ORDER_STATUS @default(PLACED)\n  shippingAddress String\n  createdAt       DateTime     @default(now())\n  updatedAt       DateTime     @updatedAt\n\n  customerId String\n  customer   User   @relation("CustomerOrders", fields: [customerId], references: [id])\n\n  items OrderItem[]\n}\n\nmodel OrderItem {\n  id       Int   @id @default(autoincrement())\n  quantity Int\n  price    Float\n\n  orderId Int\n  order   Order @relation(fields: [orderId], references: [id])\n\n  medicineId Int\n  medicine   Medicine @relation(fields: [medicineId], references: [id])\n}\n\nmodel Review {\n  id        Int      @id @default(autoincrement())\n  rating    Int\n  comment   String?\n  createdAt DateTime @default(now())\n  updatedAt DateTime @updatedAt\n\n  customerId String\n  customer   User   @relation(fields: [customerId], references: [id])\n\n  medicineId Int\n  medicine   Medicine @relation(fields: [medicineId], references: [id])\n}\n',
   "runtimeDataModel": {
     "models": {},
     "enums": {},
@@ -204,7 +204,12 @@ var updateMedicine = async (id, data, userId) => {
   return updated;
 };
 var deleteMedicine = async (id, userId) => {
-  const existing = await prisma.medicine.findUnique({ where: { id } });
+  const existing = await prisma.medicine.findUnique({
+    where: { id },
+    include: {
+      orderItems: true
+    }
+  });
   if (!existing) {
     const err = new Error("Medicine not found");
     err.status = 404;
@@ -213,6 +218,11 @@ var deleteMedicine = async (id, userId) => {
   if (existing.sellerId !== userId) {
     const err = new Error("You can only delete your own medicines");
     err.status = 403;
+    throw err;
+  }
+  if (existing.orderItems.length > 0) {
+    const err = new Error("Cannot delete medicine that has been ordered");
+    err.status = 400;
     throw err;
   }
   await prisma.medicine.delete({ where: { id } });
@@ -433,17 +443,27 @@ var updateMedicine2 = async (req, res) => {
 };
 var deleteMedicine2 = async (req, res) => {
   try {
+    console.log("=== DELETE MEDICINE DEBUG ===");
+    console.log("User:", req.user);
+    console.log("Params:", req.params);
+    console.log("Medicine ID:", req.params.id);
     const user = req.user;
     if (!user) {
+      console.log("\u274C No user found");
       return res.status(401).json({ error: "Unauthorized" });
     }
     const id = Number(req.params.id);
+    console.log("Parsed ID:", id);
     if (isNaN(id)) {
+      console.log("\u274C Invalid ID");
       return res.status(400).json({ error: "Invalid medicine ID" });
     }
+    console.log("Calling service with ID:", id, "User:", user.id);
     await MedicineService.deleteMedicine(id, user.id);
+    console.log("\u2705 Medicine deleted successfully");
     res.status(200).json({ message: "Medicine deleted successfully" });
   } catch (error) {
+    console.error("\u274C Delete error:", error);
     res.status(error.status || 400).json({ error: error.message || error });
   }
 };
@@ -488,7 +508,6 @@ var auth = betterAuth({
   database: prismaAdapter(prisma, {
     provider: "postgresql"
   }),
-  // baseURL: process.env.BETTER_AUTH_URL || 'http://localhost:5000',
   baseURL: process.env.BETTER_AUTH_URL,
   trustedOrigins: ["https://medi-store-client-five.vercel.app"],
   user: {
@@ -572,22 +591,18 @@ var auth = betterAuth({
   },
   session: {
     expiresIn: 60 * 60 * 24 * 7,
-    // 7 days
     updateAge: 60 * 60 * 24,
-    // 1 day
     cookieCache: {
       enabled: true,
       maxAge: 5 * 60
-      // 5 minutes
     }
   },
   advanced: {
     cookiePrefix: "medistore",
-    useSecureCookies: process.env.NODE_ENV === "production",
+    useSecureCookies: true,
     cookieSameSite: "none",
-    // ✅ Must be 'none' for cross-domain
     crossSubDomainCookies: {
-      enabled: true
+      enabled: false
     }
   }
 });
@@ -866,7 +881,6 @@ var getSellerOrders2 = async (sellerId, statusFilter) => {
   }
   const orders = await prisma.order.findMany({
     where: {
-      // order must have at least one item whose medicine belongs to this seller
       items: {
         some: {
           medicine: {
@@ -874,7 +888,6 @@ var getSellerOrders2 = async (sellerId, statusFilter) => {
           }
         }
       },
-      // optionally filter by status
       ...statusFilter && { status: statusFilter }
     },
     orderBy: { createdAt: "desc" },
@@ -957,11 +970,8 @@ var updateSellerOrderStatus2 = async (orderId, newStatus, sellerId) => {
 var OrderService = {
   createOrder,
   getMyOrders,
-  // Returns all orders for a customer
   getAllOrders,
-  // Returns all orders (admin)
   getOrderById,
-  // Returns single order
   updateOrderStatus,
   getSellerOrders: getSellerOrders2,
   updateSellerOrderStatus: updateSellerOrderStatus2
@@ -1089,10 +1099,8 @@ var updateSellerOrderStatus3 = async (req, res) => {
 var OrderController = {
   createOrder: createOrder2,
   getMyOrders: getMyOrders2,
-  // This should call OrderService.getMyOrders
   getAllOrders: getAllOrders2,
   getOrderById: getOrderById2,
-  // This should call OrderService.getOrderById
   updateOrderStatus: updateOrderStatus2,
   getSellerOrders: getSellerOrders3,
   updateSellerOrderStatus: updateSellerOrderStatus3

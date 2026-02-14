@@ -18,7 +18,6 @@ export const auth = betterAuth({
     provider: 'postgresql',
   }),
 
-  // baseURL: process.env.BETTER_AUTH_URL || 'http://localhost:5000',
   baseURL: process.env.BETTER_AUTH_URL,
 
   trustedOrigins: ['https://medi-store-client-five.vercel.app'],
@@ -107,19 +106,19 @@ export const auth = betterAuth({
   },
 
   session: {
-    expiresIn: 60 * 60 * 24 * 7, // 7 days
-    updateAge: 60 * 60 * 24, // 1 day
+    expiresIn: 60 * 60 * 24 * 7, 
+    updateAge: 60 * 60 * 24, 
     cookieCache: {
       enabled: true,
-      maxAge: 5 * 60, // 5 minutes
+      maxAge: 5 * 60, 
     },
   },
   advanced: {
     cookiePrefix: 'medistore',
-    useSecureCookies: process.env.NODE_ENV === 'production',
-    cookieSameSite: 'none', // ✅ Must be 'none' for cross-domain
+    useSecureCookies: true,
+    cookieSameSite: 'none', 
     crossSubDomainCookies: {
-      enabled: true,
+      enabled: false,
     },
   },
 });
